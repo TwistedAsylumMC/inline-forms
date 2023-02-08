@@ -17,7 +17,8 @@ type Custom struct {
 	// to render the form.
 	Elements []Element
 	// Submit is called when the form is closed or if a player pressed the submit button. This is always called after the
-	// Submit of every Element. The values will be passed in a slice, with the same order as the Elements slice.
+	// Submit of every Element. The values will be passed in a slice, with the same order as the Elements slice. If the
+	// form was closed, the values slice will be nil.
 	Submit func(closed bool, values []any)
 }
 
