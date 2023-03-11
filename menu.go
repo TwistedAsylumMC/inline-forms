@@ -2,7 +2,6 @@ package form
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/df-mc/dragonfly/server/player/form"
 )
@@ -55,8 +54,8 @@ func (form *Menu) SubmitJSON(data []byte, _ form.Submitter) error {
 
 // MarshalJSON ...
 func (form *Menu) MarshalJSON() ([]byte, error) {
-	if len(form.Buttons) == 0 {
-		return nil, errors.New("menu form requires at least one button")
+	if form.Buttons == nil {
+		form.Buttons = make([]Button, 0)
 	}
 	return json.Marshal(map[string]any{
 		"type":    "form",
