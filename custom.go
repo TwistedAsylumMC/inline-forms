@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/df-mc/dragonfly/server/player/form"
+	"github.com/df-mc/dragonfly/server/world"
 )
 
 // Custom represents a form that may be sent to a player and has fields that should be filled out by the player that the
@@ -19,7 +20,7 @@ type Custom struct {
 	// Submit is called when the form is closed or if a player pressed the submit button. This is always called after the
 	// Submit of every Element. The values will be passed in a slice, with the same order as the Elements slice. If the
 	// form was closed, the values slice will be nil.
-	Submit func(closed bool, values []any)
+	Submit func(closed bool, values []any, tx *world.Tx)
 }
 
 // Element appends an element to the bottom of the form.
@@ -28,10 +29,10 @@ func (form *Custom) Element(element Element) {
 }
 
 // SubmitJSON ...
-func (form *Custom) SubmitJSON(data []byte, _ form.Submitter) error {
+func (form *Custom) SubmitJSON(data []byte, _ form.Submitter, tx *world.Tx) error {
 	if data == nil {
 		if form.Submit != nil {
-			form.Submit(true, nil)
+			form.Submit(true, nil, tx)
 		}
 		return nil
 	}
@@ -50,7 +51,7 @@ func (form *Custom) SubmitJSON(data []byte, _ form.Submitter) error {
 		}
 	}
 	if form.Submit != nil {
-		form.Submit(false, inputData)
+		form.Submit(false, inputData, tx)
 	}
 	return nil
 }
