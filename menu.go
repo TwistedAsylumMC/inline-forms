@@ -19,7 +19,7 @@ type Menu struct {
 	Buttons []Button
 	// Submit is called when the form is closed or if a player clicks a button. This is always called after the clicked
 	// Button's Submit.
-	Submit func(closed bool)
+	Submit func(closed bool, tx *world.Tx)
 }
 
 // Button appends a button to the bottom of the form.
@@ -28,10 +28,10 @@ func (form *Menu) Button(button Button) {
 }
 
 // SubmitJSON ...
-func (form *Menu) SubmitJSON(data []byte, _ form.Submitter, _ *world.Tx) error {
+func (form *Menu) SubmitJSON(data []byte, _ form.Submitter, tx *world.Tx) error {
 	if data == nil {
 		if form.Submit != nil {
-			form.Submit(true)
+			form.Submit(true, tx)
 		}
 		return nil
 	}
@@ -45,10 +45,10 @@ func (form *Menu) SubmitJSON(data []byte, _ form.Submitter, _ *world.Tx) error {
 	}
 	button := form.Buttons[index]
 	if button.Submit != nil {
-		button.Submit()
+		button.Submit(tx)
 	}
 	if form.Submit != nil {
-		form.Submit(false)
+		form.Submit(false, tx)
 	}
 	return nil
 }
