@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/df-mc/dragonfly/server/player/form"
+	"github.com/df-mc/dragonfly/server/world"
 )
 
 // Custom represents a form that may be sent to a player and has fields that should be filled out by the player that the
@@ -28,7 +29,7 @@ func (form *Custom) Element(element Element) {
 }
 
 // SubmitJSON ...
-func (form *Custom) SubmitJSON(data []byte, _ form.Submitter) error {
+func (form *Custom) SubmitJSON(data []byte, _ form.Submitter, _ *world.Tx) error {
 	if data == nil {
 		if form.Submit != nil {
 			form.Submit(true, nil)

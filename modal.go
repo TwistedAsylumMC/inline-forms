@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/df-mc/dragonfly/server/player/form"
+	"github.com/df-mc/dragonfly/server/world"
 )
 
 // Modal represents a modal form. These forms have a body with text and two buttons at the end, typically one for Yes
@@ -23,7 +24,7 @@ type Modal struct {
 }
 
 // SubmitJSON ...
-func (form *Modal) SubmitJSON(data []byte, _ form.Submitter) error {
+func (form *Modal) SubmitJSON(data []byte, _ form.Submitter, _ *world.Tx) error {
 	if data == nil {
 		if form.Submit != nil {
 			form.Submit(true)

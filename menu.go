@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/df-mc/dragonfly/server/player/form"
+	"github.com/df-mc/dragonfly/server/world"
 )
 
 // Menu represents a menu form. These menus are made up of a title and a body, with a number of buttons which
@@ -27,7 +28,7 @@ func (form *Menu) Button(button Button) {
 }
 
 // SubmitJSON ...
-func (form *Menu) SubmitJSON(data []byte, _ form.Submitter) error {
+func (form *Menu) SubmitJSON(data []byte, _ form.Submitter, _ *world.Tx) error {
 	if data == nil {
 		if form.Submit != nil {
 			form.Submit(true)
