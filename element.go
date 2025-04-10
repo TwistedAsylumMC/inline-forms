@@ -15,6 +15,13 @@ type Element interface {
 	submit(value any) error
 }
 
+// MenuElement represents an element that may be added to a Menu form. Any of the types in this package that
+// implement the menu element interface may be added to a Menu form before it is sent to a player.
+type MenuElement interface {
+	Element
+	menuElement() bool
+}
+
 // Label represents a static label on a form. It serves only to display a box of text, and users cannot
 // submit values to it.
 type Label struct {
@@ -30,10 +37,11 @@ func (l Label) MarshalJSON() ([]byte, error) {
 	})
 }
 
-// Submit ...
-func (l Label) submit(any) error {
-	return nil
-}
+// submit ...
+func (l Label) submit(_ any) error { return nil }
+
+// menuElement ...
+func (l Label) menuElement() bool { return true }
 
 // Input represents a text input box element. Submitters may write any text in these boxes with no specific
 // length.
@@ -61,7 +69,7 @@ func (i Input) MarshalJSON() ([]byte, error) {
 	})
 }
 
-// Submit ...
+// submit ...
 func (i Input) submit(value any) error {
 	if i.Submit == nil {
 		return nil
@@ -98,7 +106,7 @@ func (t Toggle) MarshalJSON() ([]byte, error) {
 	})
 }
 
-// Submit ...
+// submit ...
 func (t Toggle) submit(value any) error {
 	if t.Submit == nil {
 		return nil
@@ -141,7 +149,7 @@ func (s Slider) MarshalJSON() ([]byte, error) {
 	})
 }
 
-// Submit ...
+// submit ...
 func (s Slider) submit(value any) error {
 	if s.Submit == nil {
 		return nil
@@ -183,7 +191,7 @@ func (d Dropdown) MarshalJSON() ([]byte, error) {
 	})
 }
 
-// Submit ...
+// submit ...
 func (d Dropdown) submit(value any) error {
 	if d.Submit == nil {
 		return nil
@@ -214,7 +222,7 @@ func (s StepSlider) MarshalJSON() ([]byte, error) {
 	})
 }
 
-// Submit ...
+// submit ...
 func (s StepSlider) submit(value any) error {
 	if s.Submit == nil {
 		return nil
@@ -230,6 +238,45 @@ func (s StepSlider) submit(value any) error {
 	s.Submit(int(val), s.Options[val])
 	return nil
 }
+
+// Header represents a larger static label on a form. It serves only to display a box of bold text, and users
+// cannot submit values to it.
+type Header struct {
+	// Text is the text held by the label. The text may contain Minecraft formatting codes.
+	Text string
+}
+
+// MarshalJSON ...
+func (h Header) MarshalJSON() ([]byte, error) {
+	return json.Marshal(map[string]any{
+		"type": "header",
+		"text": h.Text,
+	})
+}
+
+// submit ...
+func (h Header) submit(_ any) error { return nil }
+
+// menuElement ...
+func (h Header) menuElement() bool { return true }
+
+// Divider represents a horizontal line that separates elements in a form. It is used to make the form more
+// readable and to group elements together. Users cannot submit values to it.
+type Divider struct{}
+
+// MarshalJSON ...
+func (d Divider) MarshalJSON() ([]byte, error) {
+	return json.Marshal(map[string]any{
+		"type": "divider",
+		"text": "",
+	})
+}
+
+// submit ...
+func (d Divider) submit(_ any) error { return nil }
+
+// menuElement ...
+func (d Divider) menuElement() bool { return true }
 
 // Button represents a button added to a Menu or Modal form. The button has text on it and an optional image,
 // which may be either retrieved from a website or the local assets of the game.
@@ -247,7 +294,10 @@ type Button struct {
 
 // MarshalJSON ...
 func (b Button) MarshalJSON() ([]byte, error) {
-	m := map[string]any{"text": b.Text}
+	m := map[string]any{
+		"type": "button",
+		"text": b.Text,
+	}
 	if b.Image != "" {
 		buttonType := "path"
 		if strings.HasPrefix(b.Image, "http:") || strings.HasPrefix(b.Image, "https:") {
@@ -257,3 +307,9 @@ func (b Button) MarshalJSON() ([]byte, error) {
 	}
 	return json.Marshal(m)
 }
+
+// submit ...
+func (b Button) submit(any) error { return nil }
+
+// menuElement ...
+func (b Button) menuElement() bool { return true }

@@ -14,17 +14,21 @@ type Menu struct {
 	Title string
 	// Content is the content that is displayed underneath the title and before any buttons.
 	Content string
-	// Buttons is a slice of buttons that can be clicked by a player. There must be at least one button for the client
-	// to render the form.
-	Buttons []Button
-	// Submit is called when the form is closed or if a player clicks a button. This is always called after the clicked
-	// Button's Submit.
+	// Elements is a slice of elements that can be displayed in the form. These elements currently include
+	// Header, Label, Divider and Button. Only buttons can be clicked.
+	Elements []MenuElement
+	// Submit is called when the form is closed or if a player clicks a button. This is always called after
+	// the clicked Button's Submit.
 	Submit func(closed bool, tx *world.Tx)
+
+	// buttons is a slice of buttons that are present in the form. This is used to determine which button was
+	// clicked when the form is submitted. It is populated when the form is marshalled to JSON.
+	buttons []Button
 }
 
-// Button appends a button to the bottom of the form.
-func (form *Menu) Button(button Button) {
-	form.Buttons = append(form.Buttons, button)
+// Element appends a MenuElement to the bottom of the form.
+func (form *Menu) Element(e MenuElement) {
+	form.Elements = append(form.Elements, e)
 }
 
 // SubmitJSON ...
@@ -40,10 +44,10 @@ func (form *Menu) SubmitJSON(data []byte, _ form.Submitter, tx *world.Tx) error 
 	if err != nil {
 		return fmt.Errorf("cannot parse button index as int: %w", err)
 	}
-	if index >= uint(len(form.Buttons)) {
-		return fmt.Errorf("button index points to inexistent button: %v (only %v buttons present)", index, len(form.Buttons))
+	if index >= uint(len(form.buttons)) {
+		return fmt.Errorf("button index points to invalid button: %v (only %v buttons present)", index, len(form.buttons))
 	}
-	button := form.Buttons[index]
+	button := form.buttons[index]
 	if button.Submit != nil {
 		button.Submit(tx)
 	}
@@ -55,13 +59,16 @@ func (form *Menu) SubmitJSON(data []byte, _ form.Submitter, tx *world.Tx) error 
 
 // MarshalJSON ...
 func (form *Menu) MarshalJSON() ([]byte, error) {
-	if form.Buttons == nil {
-		form.Buttons = make([]Button, 0)
+	form.buttons = nil
+	for _, element := range form.Elements {
+		if button, ok := element.(Button); ok {
+			form.buttons = append(form.buttons, button)
+		}
 	}
 	return json.Marshal(map[string]any{
-		"type":    "form",
-		"title":   form.Title,
-		"content": form.Content,
-		"buttons": form.Buttons,
+		"type":     "form",
+		"title":    form.Title,
+		"content":  form.Content,
+		"elements": form.Elements,
 	})
 }
